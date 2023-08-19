@@ -1,129 +1,99 @@
 import {
+  ApplyDraggableStylesType,
   CoordinatesHandlerType,
-  CoordinatesType,
-  CreateProjectionType,
-  DraggableStylesType,
+  CreateProjectionType, DragEndHandlerType,
+  DragMoveHandlerType,
+  DragStartHandlerType,
+  PointerDownActionType, PointerMoveActionType, PointerUpActionType, SwapElementToProjectionType,
   UseDraggableType
 } from "./types";
-import { RefObject } from "react";
 
-const calculateShifts: CoordinatesHandlerType<CoordinatesType> = (coordinates) => {
-  const { clientX, clientY, elementX, elementY } = coordinates
+const calculateShifts: CoordinatesHandlerType = (coordinates) => {
+  const { clientX, clientY, elementX, elementY } = coordinates;
 
-  const shiftX = clientX - elementX;
-  const shiftY = clientY - elementY;
-
-  return { shiftX, shiftY };
+  return {
+    shiftX: clientX - elementX,
+    shiftY: clientY - elementY
+  };
 };
 
-const createDraggableStyles: CoordinatesHandlerType<DraggableStylesType> = (coordinates) => {
-  const { pageX, pageY, shiftX, shiftY } = coordinates
+const applyDraggableStyles: ApplyDraggableStylesType = (coordinates,
+                                                        draggableRef) => {
+  if (!(draggableRef.current instanceof HTMLDivElement)) {
+    return;
+  }
+
+  const { pageX, pageY, shiftX, shiftY } = coordinates;
+  const { height, width } = draggableRef.current.getBoundingClientRect();
 
   const translatedX = pageX - shiftX;
   const translatedY = pageY - shiftY;
 
-  return {
-    position: "absolute",
-    left: 0 + "px",
-    top: 0 + "px",
-    transform: `translate(${translatedX}px, ${translatedY}px)`
-  };
+  draggableRef.current.style.position = "absolute";
+  draggableRef.current.style.top = 0 + "px";
+  draggableRef.current.style.left = 0 + "px";
+  draggableRef.current.style.height = height + "px";
+  draggableRef.current.style.width = width + "px";
+  draggableRef.current.style.transform = `translate(${translatedX}px, ${translatedY}px)`;
+  draggableRef.current.style.cursor = 'grabbing'
 };
 
 const createProjection: CreateProjectionType = ({ height, width }) => {
   const projection = document.createElement("div");
 
   projection.classList.add("projection");
-  projection.style.height = height.toString()+"px";
-  projection.style.width = width.toString()+"px";
+  projection.style.height = height.toString() + "px";
+  projection.style.width = width.toString() + "px";
 
   return projection;
 };
 
-let shiftX: number, shiftY: number;
-
-//@ts-ignore
-const calculateSwap = (coordinates, projection, dropZoneRef)=>{
-  //@ts-ignore
-  const { pointerX, pointerY } = coordinates
-  //@ts-ignore
-  const nodeBelowPointer = document.elementFromPoint(pointerX, pointerY)
-
-
-  //@ts-ignore
-  if (!!nodeBelowPointer && nodeBelowPointer.classList.contains('item')){
-    if(
-      projection.getBoundingClientRect().y >
-      //@ts-ignore
-        nodeBelowPointer.getBoundingClientRect().y ||
-        projection.getBoundingClientRect().x >
-      //@ts-ignore
-        nodeBelowPointer.getBoundingClientRect().x
-    ) {
-      dropZoneRef.current.insertBefore(
-        projection,
-        nodeBelowPointer
-      );
-    }
-    else {
-      dropZoneRef.current.insertBefore(
-        projection,      //@ts-ignore
-        nodeBelowPointer.nextElementSibling
-      );
-    }
-  }
-}
-//@ts-ignore
-const onDragHandler = (event: PointerEvent, dropZoneRef:RefObject<HTMLDivElement>, draggableRef: RefObject<HTMLElement>, projection) => {
-  const { pageX, pageY } = event;
-
-  if (!(draggableRef.current instanceof Element) ||
-    !(dropZoneRef.current instanceof Element)) {
+const swapElementToProjection: SwapElementToProjectionType = (coordinates,
+                                                              projection,
+                                                              dropZoneRef) => {
+  if ((dropZoneRef.current === null)) {
     return;
   }
 
-  const draggableStyles = createDraggableStyles({ pageX, pageY, shiftX, shiftY });
-  draggableRef.current.style.position = draggableStyles.position;
-  draggableRef.current.style.top = draggableStyles.top;
-  draggableRef.current.style.left = draggableStyles.left;
-  draggableRef.current.style.transform = draggableStyles.transform;
+  const { pointerX, pointerY } = coordinates;
+  const { x: projectionX, y: projectionY } = projection.getBoundingClientRect();
 
-  draggableRef.current.hidden = true;
-//@ts-ignore
-  calculateSwap({pointerX: event.pageX, pointerY: event.pageY}, projection, dropZoneRef)
-  draggableRef.current.hidden = false;
-};
-//@ts-ignore
-let moveAction, upAction;
-//@ts-ignore
-const onDragEndHandler = (setIsDragging, dropZoneRef, draggableRef, projection) => {
-  dropZoneRef.current.insertBefore(draggableRef.current, projection);
-  draggableRef.current.style = "";
-  projection.remove();//@ts-ignore
-  dropZoneRef.current.removeEventListener("pointermove", moveAction);//@ts-ignore
-  dropZoneRef.current.removeEventListener("pointerup", upAction);
+  const nodeBelowPointer = document.elementFromPoint(pointerX, pointerY);
 
-  setIsDragging(false);
+  if (!nodeBelowPointer || !nodeBelowPointer.classList.contains("item")) {
+    return;
+  }
+
+  const { x: nodeX, y: nodeY } = nodeBelowPointer.getBoundingClientRect();
+
+  if (projectionY > nodeY || projectionX > nodeX) {
+    dropZoneRef.current.insertBefore(projection, nodeBelowPointer);
+  } else {
+    dropZoneRef.current.insertBefore(projection, nodeBelowPointer.nextElementSibling);
+  }
 };
 
 const useDraggable: UseDraggableType = (setIsDragging,
                                         dropZoneRef,
                                         draggableRef) => {
+  let shiftX: number, shiftY: number;
+  let projection: HTMLDivElement;
 
-  return (event) => {
-    const { clientX, clientY, pageX, pageY } = event;
-
-    if (dropZoneRef === undefined ||
-      draggableRef === undefined ||
-      dropZoneRef?.current === null ||
-      draggableRef?.current === null ||
-      setIsDragging === undefined) {
+  const dragStartHandler: DragStartHandlerType = (event,
+                                                  setIsDragging,
+                                                  dropZoneRef,
+                                                  draggableRef) => {
+    if (!(draggableRef.current instanceof HTMLDivElement) ||
+      !(dropZoneRef.current instanceof HTMLDivElement)) {
       return;
     }
 
-    if (!(draggableRef.current instanceof Element)) {
-      return;
-    }
+    const {
+      clientX,
+      clientY,
+      pageX,
+      pageY
+    } = event;
 
     setIsDragging(true);
 
@@ -134,39 +104,62 @@ const useDraggable: UseDraggableType = (setIsDragging,
       width
     } = draggableRef.current.getBoundingClientRect();
 
-    ({ shiftX, shiftY } = calculateShifts(
-      {
-        clientX,
-        clientY,
-        elementX,
-        elementY
-      }
-    ));
+    ({ shiftX, shiftY } = calculateShifts({ clientX, clientY, elementX, elementY }));
 
-    const draggableStyles = createDraggableStyles(
-      {
-        pageX,
-        pageY,
-        shiftX,
-        shiftY
-      }
-    );
+    applyDraggableStyles({ pageX, pageY, shiftX, shiftY }, draggableRef);
 
-    draggableRef.current.style.position = draggableStyles.position;
-    draggableRef.current.style.top = draggableStyles.top;
-    draggableRef.current.style.left = draggableStyles.left;
-    draggableRef.current.style.transform = draggableStyles.transform;
-    draggableRef.current.style.height = height+"px";
-    draggableRef.current.style.width = width+"px";
+    projection = createProjection({ height, width });
 
-    const projection = createProjection({ height, width });
     dropZoneRef.current.insertBefore(projection, draggableRef.current);
-//@ts-ignore
-    moveAction = (event) => onDragHandler(event, dropZoneRef, draggableRef, projection)
-    upAction = ()=>onDragEndHandler(setIsDragging, dropZoneRef, draggableRef, projection)
-    dropZoneRef.current?.addEventListener("pointermove", moveAction);
-    dropZoneRef.current?.addEventListener("pointerup", upAction);
+
+    dropZoneRef.current?.addEventListener("pointermove", pointerMoveAction);
+    dropZoneRef.current?.addEventListener("pointerup", pointerUpAction);
   };
+
+  const dragMoveHandler: DragMoveHandlerType = (event,
+                                                dropZoneRef,
+                                                draggableRef) => {
+    const { pageX, pageY } = event;
+
+    applyDraggableStyles({ pageX, pageY, shiftX, shiftY }, draggableRef);
+
+    draggableRef.current.hidden = true;
+    swapElementToProjection({
+        pointerX: event.pageX,
+        pointerY: event.pageY
+      },
+      projection,
+      dropZoneRef);
+    draggableRef.current.hidden = false;
+  };
+
+  const dragEndHandler: DragEndHandlerType = (setIsDragging,
+                                              dropZoneRef,
+                                              draggableRef) => {
+    if (dropZoneRef.current === null || draggableRef.current === null) {
+      return;
+    }
+
+    dropZoneRef.current.insertBefore(draggableRef.current, projection);
+    draggableRef.current.setAttribute("style", "");
+
+    projection.remove();
+
+    dropZoneRef.current.removeEventListener("pointermove", pointerMoveAction);
+    dropZoneRef.current.removeEventListener("pointerup", pointerUpAction);
+
+    setIsDragging(false);
+  };
+
+  const pointerDownAction: PointerDownActionType =
+    (event) => dragStartHandler(event, setIsDragging, dropZoneRef, draggableRef);
+  const pointerMoveAction: PointerMoveActionType =
+    //@ts-ignore
+    (event) => dragMoveHandler(event, dropZoneRef, draggableRef);
+  const pointerUpAction: PointerUpActionType =
+    () => dragEndHandler(setIsDragging, dropZoneRef, draggableRef);
+
+  return pointerDownAction;
 };
 
 export default useDraggable;

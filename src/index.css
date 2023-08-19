@@ -35,11 +35,20 @@ button {
     margin-bottom: 0;
 }
 
+
 .container {
-    padding: 10px;
-    border: 1px solid blue;
+    max-width: 200px;
+    row-gap: 20px;
+    display: flex;
+    flex-direction: column;
+}
+
+.container > .item {
+    background-color: #315031;
+    padding: 20px;
+    margin: 0;
 }
 
 .projection {
-    background-color: blue;
+    background-color: rgba(54, 54, 255, 0.5);
 }

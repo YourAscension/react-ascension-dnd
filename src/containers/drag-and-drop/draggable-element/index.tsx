@@ -9,10 +9,11 @@ const DraggableElement: FC<IDraggableElementProps> = (props) => {
   const draggableRef: React.RefObject<HTMLDivElement> = useRef(null);
 
   const dropZoneContext = useContext<IDropZoneContext | null>(DropZoneContext);
-
+  //@ts-ignore
   const dragStartHandler = useDraggable(dropZoneContext?.setIsDragging, dropZoneContext?.dropZoneRef, draggableRef);
 
   useEffect(() => {
+    //@ts-ignore
     draggableRef.current?.addEventListener("pointerdown", dragStartHandler);
     draggableRef.current?.classList.add(`item`, id.toString());
   }, []);
