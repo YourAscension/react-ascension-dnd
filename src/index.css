@@ -24,3 +24,7 @@ button {
   color: var(--primary-color-dark-2);
   border: 1px solid var(--primary-color-dark-2)
 }
+
+.item {
+  cursor: grab  ;
+}
