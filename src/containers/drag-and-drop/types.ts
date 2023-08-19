@@ -1,5 +1,6 @@
 import React, {FC} from "react";
 import {IDraggableElementProps} from "./draggable-element/types";
+
 export interface IDropZoneContext {
     isDragging: boolean,
     setIsDragging: (isDragging: boolean) => void,
@@ -7,7 +8,7 @@ export interface IDropZoneContext {
 }
 
 export interface IDropZoneProps {
-    children: React.ReactNode,
+    children: (dropZoneRef: React.MutableRefObject<HTMLDivElement | null>) => React.ReactNode,
 }
 
 export type IDropZoneFCType = FC<IDropZoneProps> & { DraggableElement: FC<IDraggableElementProps> }

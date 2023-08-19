@@ -12,7 +12,7 @@ const DropZone: IDropZoneFCType = ({children}) => {
         <DropZoneContext.Provider
             value={{isDragging, setIsDragging, dropZoneRef}}
         >
-            <div ref={dropZoneRef}>{children}</div>
+            {children(dropZoneRef)}
         </DropZoneContext.Provider>
     );
 };

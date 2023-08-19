@@ -15,14 +15,18 @@ function App() {
         <>
             <DropZone>
                 {
-                    // <ul>Container:
-                        items.map(item => {
-                            return <DropZone.DraggableElement key={item.id} id={item.id}>
-                                <li>{item.title}</li>
-                            </DropZone.DraggableElement>
-                        })
-                    // </ul>
-                }
+                    (dropZoneRef)=>{
+                    return <div ref={dropZoneRef} className="container">
+                        Container:
+                        {
+                            items.map(item => {
+                                return <DropZone.DraggableElement key={item.id} id={item.id}>
+                                    <li>{item.title}</li>
+                                </DropZone.DraggableElement>
+                            })
+                        }
+                    </div>
+                }}
             </DropZone>
         </>
     );
