@@ -1,6 +1,6 @@
 import React from "react";
 
 export interface IDraggableElementProps {
-    children: React.ReactNode,
-    id: number
+  children: (draggableRef: React.RefObject<HTMLLIElement>) => React.ReactNode,
+  id: number
 }

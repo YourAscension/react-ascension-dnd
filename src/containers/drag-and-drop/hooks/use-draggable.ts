@@ -45,7 +45,6 @@ const useDraggable: UseDraggableType = (setIsDragging, dropZoneRef, draggableRef
             return;
         }
 
-        if ((draggableRef.current.childNodes[0] instanceof Element)) {
             setIsDragging(true);
 
             const {
@@ -53,7 +52,7 @@ const useDraggable: UseDraggableType = (setIsDragging, dropZoneRef, draggableRef
                 top: elementY,
                 height,
                 width
-            } = draggableRef.current.childNodes[0].getBoundingClientRect();
+            } = draggableRef.current.getBoundingClientRect();
 
             const {shiftX, shiftY} = calculateShifts(
                 {
@@ -82,7 +81,6 @@ const useDraggable: UseDraggableType = (setIsDragging, dropZoneRef, draggableRef
             console.log(draggableRef.current);
             dropZoneRef.current.insertBefore(projection, draggableRef.current);
         }
-    }
 };
 
 export default useDraggable;

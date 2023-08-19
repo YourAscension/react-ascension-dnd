@@ -1,7 +1,8 @@
-import React, {PointerEventHandler} from "react";
+import { MutableRefObject, RefObject } from "react";
 
-export type UseDraggableType = (setIsDragging: ((isDragging: boolean) => void) | undefined, dropZoneRef: React.MutableRefObject<HTMLDivElement | null> | undefined, draggableRef: React.MutableRefObject<HTMLDivElement | null>) => PointerEventHandler<HTMLDivElement>
-
+export type UseDraggableType = (setIsDragging: ((isDragging: boolean) => void) | undefined,
+                                dropZoneRef: MutableRefObject<HTMLDivElement | null> | undefined,
+                                draggableRef: RefObject<HTMLLIElement>) => (event: PointerEvent) => void
 
 export type CoordinatesType = Record<string, number>
 export type CoordinatesHandlerType<T> = (coordinates: CoordinatesType) => T
