@@ -27,7 +27,8 @@ button {
 
 .item {
     cursor: grab;
-    margin-bottom: 10px
+    margin-bottom: 10px;
+    user-select: none;
 }
 
 .item:last-child {
@@ -37,4 +38,8 @@ button {
 .container {
     padding: 10px;
     border: 1px solid blue;
+}
+
+.projection {
+    background-color: blue;
 }

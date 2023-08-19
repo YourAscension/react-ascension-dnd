@@ -6,7 +6,7 @@ import useDraggable from "../hooks/use-draggable";
 
 const DraggableElement: FC<IDraggableElementProps> = (props) => {
   const { children, id } = props;
-  const draggableRef: React.RefObject<HTMLLIElement> = useRef(null);
+  const draggableRef: React.RefObject<HTMLDivElement> = useRef(null);
 
   const dropZoneContext = useContext<IDropZoneContext | null>(DropZoneContext);
 

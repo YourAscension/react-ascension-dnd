@@ -22,7 +22,7 @@ function App() {
                 items.map(item => {
                   return <DropZone.DraggableElement key={item.id} id={item.id}>
                     {
-                      (draggableRef) => <li ref={draggableRef}>{item.title}</li>
+                      (draggableRef) => <div ref={draggableRef}>{item.title}</div>
                     }
                   </DropZone.DraggableElement>;
                 })
