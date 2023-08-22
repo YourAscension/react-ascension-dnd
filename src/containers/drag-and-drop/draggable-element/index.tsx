@@ -13,9 +13,12 @@ const DraggableElement: FC<IDraggableElementProps> = (props) => {
   const dragStartHandler = useDraggable(dropZoneContext?.setIsDragging, dropZoneContext?.dropZoneRef, draggableRef);
 
   useEffect(() => {
-    //@ts-ignore
-    draggableRef.current?.addEventListener("pointerdown", dragStartHandler);
-    draggableRef.current?.classList.add(`item`, id.toString());
+    if (draggableRef.current && dragStartHandler) {
+      draggableRef.current.addEventListener("pointerdown", dragStartHandler);
+      draggableRef.current.classList.add(`item`, id.toString());
+      draggableRef.current.draggable = false;
+      draggableRef.current.ondragstart = () => false;
+    }
   }, []);
 
   return (

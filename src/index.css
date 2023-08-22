@@ -29,6 +29,7 @@ button {
     cursor: grab;
     margin-bottom: 10px;
     user-select: none;
+    touch-action: none;
 }
 
 .item:last-child {

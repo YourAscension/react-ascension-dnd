@@ -122,7 +122,9 @@ const useDraggable: UseDraggableType = (setIsDragging,
     const { pageX, pageY } = event;
 
     applyDraggableStyles({ pageX, pageY, shiftX, shiftY }, draggableRef);
-
+    /**TODO Попробовать добавить все элементы и их координаты расположения в контекст,
+     *  на основе координат определять над каким элементом  находится курсор и его смещать
+     */
     draggableRef.current.hidden = true;
     swapElementToProjection({
         pointerX: event.pageX,
