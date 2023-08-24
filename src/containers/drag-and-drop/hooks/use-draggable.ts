@@ -119,6 +119,9 @@ const useDraggable: UseDraggableType = (setIsDragging,
   const dragMoveHandler: DragMoveHandlerType = (event,
                                                 dropZoneRef,
                                                 draggableRef) => {
+    if (!(draggableRef?.current instanceof HTMLDivElement)){
+      return
+    }
     const { pageX, pageY } = event;
 
     applyDraggableStyles({ pageX, pageY, shiftX, shiftY }, draggableRef);

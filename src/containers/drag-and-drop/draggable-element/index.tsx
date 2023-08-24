@@ -18,6 +18,10 @@ const DraggableElement: FC<IDraggableElementProps> = (props) => {
       draggableRef.current.classList.add(`item`, id.toString());
       draggableRef.current.draggable = false;
       draggableRef.current.ondragstart = () => false;
+      //@ts-ignore
+      dropZoneContext?.elementsMapping.set(draggableRef.current,  Array.from(dropZoneContext?.dropZoneRef.current?.childNodes).indexOf(draggableRef.current))
+      //@ts-ignore
+      console.log(dropZoneContext?.elementsMapping)
     }
   }, []);
 

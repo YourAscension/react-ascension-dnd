@@ -19,7 +19,10 @@ function App() {
             return <div ref={dropZoneRef} className="container">
               Container:
               {
-                items.map(item => {
+                items.map((item, index) => {
+                  if (index ===2){
+                    return <h2 key={10}>2</h2>
+                  }
                   return <DropZone.DraggableElement key={item.id} id={item.id}>
                     {
                       (draggableRef) => <div ref={draggableRef}>{item.title}</div>
