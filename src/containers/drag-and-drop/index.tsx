@@ -1,23 +1,25 @@
 import React, { useState, useRef, createContext } from "react";
-import { IDropZoneContext, IDropZoneFCType } from "./types";
+import { IDragAndDrop, IDragAndDropContext } from "./types";
 import DraggableElement from "./draggable-element";
 
-export const DropZoneContext = createContext<IDropZoneContext | null>(null);
+export const DragAndDropContext = createContext<IDragAndDropContext>({} as IDragAndDropContext);
 
-const DropZone: IDropZoneFCType = ({ children }) => {
+// @ts-ignore
+const DragAndDrop: IDragAndDrop = ({ children, setItems},) => {
   const [isDragging, setIsDragging] = useState<boolean>(false);
-  const dropZoneRef: React.MutableRefObject<HTMLDivElement | null> = useRef(null);
-   const elementsMapping = new Map()
+  const dropZoneRef = useRef<HTMLDivElement>(null);
+  const elementsMapping = useRef(new Map<HTMLDivElement, number>());
+
 
   return (
-    <DropZoneContext.Provider
+    <DragAndDropContext.Provider
       //@ts-ignore
-      value={{ isDragging, setIsDragging, dropZoneRef, elementsMapping }}
+      value={{ isDragging, setIsDragging, dropZoneRef, elementsMapping, setItems }}
     >
       {children(dropZoneRef)}
-    </DropZoneContext.Provider>
+    </DragAndDropContext.Provider>
   );
 };
 
-DropZone.DraggableElement = DraggableElement;
-export default DropZone;
+DragAndDrop.DraggableElement = DraggableElement;
+export default DragAndDrop;

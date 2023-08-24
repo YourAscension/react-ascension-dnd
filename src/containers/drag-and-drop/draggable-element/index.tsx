@@ -1,28 +1,32 @@
 import React, { FC, useContext, useRef, useEffect } from "react";
-import { DropZoneContext } from "../index";
-import { IDropZoneContext } from "../types";
+import { DragAndDropContext } from "../index";
 import { IDraggableElementProps } from "./types";
-import useDraggable from "../hooks/use-draggable";
+import useDraggable from "../hooks/use-draggable/use-draggable";
 
 const DraggableElement: FC<IDraggableElementProps> = (props) => {
   const { children, id } = props;
-  const draggableRef: React.RefObject<HTMLDivElement> = useRef(null);
+  const draggableRef = useRef<HTMLDivElement>(null);
 
-  const dropZoneContext = useContext<IDropZoneContext | null>(DropZoneContext);
-  //@ts-ignore
-  const dragStartHandler = useDraggable(dropZoneContext?.setIsDragging, dropZoneContext?.dropZoneRef, draggableRef);
+  const { elementsMapping, dropZoneRef } = useContext(DragAndDropContext);
+
+  const dragStartHandler = useDraggable(draggableRef, id);
+
+  const prepareCurrentElement = () => {
+    if (!draggableRef.current || !dropZoneRef.current || !dragStartHandler) {
+      return;
+    }
+
+    draggableRef.current.addEventListener("pointerdown", dragStartHandler);
+    // draggableRef.current.classList.add(`item`, id.toString());
+    draggableRef.current.classList.add(`item`);
+    draggableRef.current.ondragstart = () => false;
+
+    elementsMapping.current.set(draggableRef.current, id);
+    console.log(elementsMapping.current);
+  };
 
   useEffect(() => {
-    if (draggableRef.current && dragStartHandler) {
-      draggableRef.current.addEventListener("pointerdown", dragStartHandler);
-      draggableRef.current.classList.add(`item`, id.toString());
-      draggableRef.current.draggable = false;
-      draggableRef.current.ondragstart = () => false;
-      //@ts-ignore
-      dropZoneContext?.elementsMapping.set(draggableRef.current,  Array.from(dropZoneContext?.dropZoneRef.current?.childNodes).indexOf(draggableRef.current))
-      //@ts-ignore
-      console.log(dropZoneContext?.elementsMapping)
-    }
+    prepareCurrentElement();
   }, []);
 
   return (
