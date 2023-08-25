@@ -1,4 +1,4 @@
-import { DropZoneRefType } from "../../types";
+import { DropZoneRefType, ElementsMappingRef } from "../../types";
 
 export type CoordinatesType = Record<string, number>
 export type CoordinatesHandlerType = (coordinates: CoordinatesType) => CoordinatesType
@@ -7,7 +7,8 @@ export type CreateProjectionType = (sizes: Record<string, number>) => HTMLDivEle
 
 export type SwapElementToProjectionType = (coordinates: Record<string, number>,
                                            projection: HTMLDivElement,
-                                           dropZoneRef: DropZoneRefType) => void | Element
+                                           dropZoneRef: DropZoneRefType,
+                                           elementsMapping: ElementsMappingRef) => void | Element
 
 
 

@@ -15,7 +15,7 @@ export const calculateShifts: CoordinatesHandlerType = (coordinates) => {
 };
 
 export const applyDraggableStyles: ApplyDraggableStylesType = (coordinates,
-                                                        draggableRef) => {
+                                                               draggableRef) => {
   if (draggableRef.current === null) {
     return;
   }
@@ -32,7 +32,7 @@ export const applyDraggableStyles: ApplyDraggableStylesType = (coordinates,
   draggableRef.current.style.height = height + "px";
   draggableRef.current.style.width = width + "px";
   draggableRef.current.style.transform = `translate(${translatedX}px, ${translatedY}px)`;
-  draggableRef.current.style.cursor = 'grabbing'
+  draggableRef.current.style.cursor = "grabbing";
 };
 
 export const createProjection: CreateProjectionType = ({ height, width }) => {
@@ -46,8 +46,9 @@ export const createProjection: CreateProjectionType = ({ height, width }) => {
 };
 
 export const swapElementToProjection: SwapElementToProjectionType = (coordinates,
-                                                              projection,
-                                                              dropZoneRef) => {
+                                                                     projection,
+                                                                     dropZoneRef,
+                                                                     elementsMapping) => {
   if (dropZoneRef.current === null) {
     return;
   }
@@ -57,7 +58,7 @@ export const swapElementToProjection: SwapElementToProjectionType = (coordinates
 
   const nodeBelowPointer = document.elementFromPoint(pointerX, pointerY);
 
-  if (!nodeBelowPointer || !nodeBelowPointer.classList.contains("item")) {
+  if (!nodeBelowPointer || !elementsMapping.current.get(nodeBelowPointer)) {
     return;
   }
 
@@ -68,5 +69,5 @@ export const swapElementToProjection: SwapElementToProjectionType = (coordinates
   } else {
     dropZoneRef.current.insertBefore(projection, nodeBelowPointer.nextElementSibling);
   }
-  return nodeBelowPointer
+  return nodeBelowPointer;
 };

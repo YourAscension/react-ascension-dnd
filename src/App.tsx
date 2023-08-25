@@ -41,6 +41,7 @@ function App() {
 
   return (
     <>
+      <section className='right-section'>
       <button onClick={addNewItemHandler}>Add new item</button>
       <DragAndDrop
         onSwapElement={swapItemsHandler}
@@ -64,6 +65,10 @@ function App() {
               ;
           }}
       </DragAndDrop>
+      </section>
+      <section className="left-section">
+        <code>{JSON.stringify(items.map(item=>item.id))}</code>
+      </section>
     </>
   )
     ;
