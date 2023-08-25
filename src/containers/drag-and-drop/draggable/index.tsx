@@ -1,9 +1,9 @@
 import React, { FC, useContext, useRef, useEffect } from "react";
 import { DragAndDropContext } from "../index";
-import { IDraggableElementProps } from "./types";
+import { IDraggableProps } from "./types";
 import useDraggable from "../hooks/use-draggable/use-draggable";
 
-const DraggableElement: FC<IDraggableElementProps> = (props) => {
+const Draggable: FC<IDraggableProps> = (props) => {
   const { children, id } = props;
   const draggableRef = useRef<HTMLDivElement>(null);
 
@@ -22,7 +22,6 @@ const DraggableElement: FC<IDraggableElementProps> = (props) => {
     draggableRef.current.ondragstart = () => false;
 
     elementsMapping.current.set(draggableRef.current, id);
-    console.log(elementsMapping.current);
   };
 
   useEffect(() => {
@@ -38,4 +37,4 @@ const DraggableElement: FC<IDraggableElementProps> = (props) => {
   );
 };
 
-export default DraggableElement;
+export default Draggable;

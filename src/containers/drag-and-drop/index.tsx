@@ -1,11 +1,10 @@
 import React, { useState, useRef, createContext } from "react";
 import { IDragAndDrop, IDragAndDropContext } from "./types";
-import DraggableElement from "./draggable-element";
+import Draggable from "./draggable";
 
 export const DragAndDropContext = createContext<IDragAndDropContext>({} as IDragAndDropContext);
 
-// @ts-ignore
-const DragAndDrop: IDragAndDrop = ({ children, setItems},) => {
+const DragAndDrop: IDragAndDrop = ({ children, onSwapElement }) => {
   const [isDragging, setIsDragging] = useState<boolean>(false);
   const dropZoneRef = useRef<HTMLDivElement>(null);
   const elementsMapping = useRef(new Map<HTMLDivElement, number>());
@@ -13,13 +12,12 @@ const DragAndDrop: IDragAndDrop = ({ children, setItems},) => {
 
   return (
     <DragAndDropContext.Provider
-      //@ts-ignore
-      value={{ isDragging, setIsDragging, dropZoneRef, elementsMapping, setItems }}
+      value={{ isDragging, setIsDragging, dropZoneRef, elementsMapping, onSwapElement }}
     >
       {children(dropZoneRef)}
     </DragAndDropContext.Provider>
   );
 };
 
-DragAndDrop.DraggableElement = DraggableElement;
+DragAndDrop.Draggable = Draggable;
 export default DragAndDrop;

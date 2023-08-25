@@ -1,5 +1,6 @@
 :root {
     --primary-color-dark-1: rgb(20, 20, 20);
+    --primary-color-dark-1-1: rgb(35, 35, 35);
     --primary-color-dark-2: rgb(120, 120, 120);
     --primary-color-dark-3: rgb(180, 180, 180);
 }
@@ -16,6 +17,10 @@
 body, html, #root {
     height: 100%;
     padding: 10px;
+
+    display: flex;
+    flex-direction: column;
+    gap: 30px;
 }
 
 button {
@@ -23,6 +28,10 @@ button {
     cursor: pointer;
     color: var(--primary-color-dark-2);
     border: 1px solid var(--primary-color-dark-2)
+}
+
+button:hover {
+    background-color: var(--primary-color-dark-1-1);
 }
 
 .item {
@@ -44,10 +53,15 @@ button {
     flex-direction: column;
 }
 
-.container > .item {
+.item {
     background-color: #315031;
     padding: 20px;
     margin: 0;
+}
+
+.item-freeze {
+    background-color: #4f0101;
+    cursor: not-allowed;
 }
 
 .projection {

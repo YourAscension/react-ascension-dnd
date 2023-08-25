@@ -1,15 +1,23 @@
 import { FC, RefObject, MutableRefObject, ReactNode } from "react";
-import { IDraggableElementProps } from "./draggable-element/types";
+import { IDraggableProps } from "./draggable/types";
+
+type SetIsDraggingType = (isDragging: boolean) => void
+
+type OnSwapElementType = (draggingElementId: number, elementToSwapId: number) => void
+
+export type DropZoneRefType = RefObject<HTMLDivElement>
 
 export interface IDragAndDropContext {
   isDragging: boolean,
-  setIsDragging: (isDragging: boolean) => void,
-  dropZoneRef: RefObject<HTMLDivElement>,
-  elementsMapping: MutableRefObject<Map<Element, number>>
+  setIsDragging: SetIsDraggingType,
+  dropZoneRef: DropZoneRefType,
+  elementsMapping: MutableRefObject<Map<Element, number>>,
+  onSwapElement: OnSwapElementType
 }
 
 interface IDragAndDropProps {
-  children: (dropZoneRef: RefObject<HTMLDivElement>) => ReactNode;
+  children: (dropZoneRef: DropZoneRefType) => ReactNode;
+  onSwapElement: OnSwapElementType;
 }
 
-export type IDragAndDrop = FC<IDragAndDropProps> & { DraggableElement: FC<IDraggableElementProps> }
+export type IDragAndDrop = FC<IDragAndDropProps> & { Draggable: FC<IDraggableProps> }

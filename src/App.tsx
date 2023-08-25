@@ -1,48 +1,72 @@
-import React, { useState, useId } from "react";
+import React, { useState } from "react";
 import DragAndDrop from "./containers/drag-and-drop";
 
 function App() {
 
-  const uniqueId = useId();
+  interface IItems {
+    id: number;
+    title: string;
+    isNotDraggable?: true;
+  }
 
-  const [items, setItems] = useState([
+  const [items, setItems] = useState<IItems[]>([
     { id: 1, title: "item 1" },
-    { id: 2, title: "item 2" },
+    { id: 2, title: "item 2", isNotDraggable: true },
     { id: 3, title: "item 3" },
     { id: 999, title: "item 99" },
     { id: 5, title: "item 5" }
   ]);
 
+  const addNewItemHandler = () => {
+    setItems(prev => [...prev, { id: items.length + 1, title: "item " + (items.length + 1) }]);
+  };
+
+  const swapItemsInArray = (draggingElementId: number, elementToSwapId: number, items: IItems[]) => {
+
+      let itemsCopy = [...items];
+      const draggingItem = itemsCopy.find(item => item.id === draggingElementId);
+
+      itemsCopy = itemsCopy.filter(item => item.id !== draggingElementId);
+
+      const elementToSwapIndex = [...items].indexOf([...items].find(item => item.id === elementToSwapId)!);
+
+      itemsCopy.splice(elementToSwapIndex, 0, draggingItem!);
+      return itemsCopy;
+    }
+  ;
+
+  const swapItemsHandler = (draggingElementId: number, elementToSwapId: number) => {
+    setItems(prev => swapItemsInArray(draggingElementId, elementToSwapId, prev));
+  };
+
   return (
     <>
-      <button
-        onClick={() => setItems(prev => [...prev, { id: items.length + 1, title: "item " + (items.length + 1) }])}>Add
-        item
-      </button>
+      <button onClick={addNewItemHandler}>Add new item</button>
       <DragAndDrop
-      //@ts-ignore
-        setItems={setItems}>
+        onSwapElement={swapItemsHandler}
+      >
         {
-          (dropZoneRef) =>{
+          (dropZoneRef) => {
             return <div ref={dropZoneRef} className="container">
-              Container:
               {
-                items.map((item, index) => {
-                  if (index === 2) {
-                    return <h2 key={uniqueId}>2</h2>;
+                items.map(item => {
+                  if (item?.isNotDraggable === true) {
+                    return <div className="item item-freeze" key={item.id}>{item.title}</div>;
                   }
-                  return <DragAndDrop.DraggableElement key={item.id} id={item.id}>
+                  return <DragAndDrop.Draggable key={item.id} id={item.id}>
                     {
                       (draggableRef) => <div ref={draggableRef}>{item.title}</div>
                     }
-                  </DragAndDrop.DraggableElement>;
+                  </DragAndDrop.Draggable>;
                 })
               }
-            </div>;
+            </div>
+              ;
           }}
       </DragAndDrop>
     </>
-  );
+  )
+    ;
 }
 
 export default App;

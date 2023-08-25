@@ -1,13 +1,13 @@
-import { MutableRefObject, RefObject } from "react";
+import { DropZoneRefType } from "../../types";
 
 export type CoordinatesType = Record<string, number>
 export type CoordinatesHandlerType = (coordinates: CoordinatesType) => CoordinatesType
-export type ApplyDraggableStylesType = (coordinates: CoordinatesType, draggableRef: RefObject<HTMLDivElement>) => void
+export type ApplyDraggableStylesType = (coordinates: CoordinatesType, draggableRef: DropZoneRefType) => void
 export type CreateProjectionType = (sizes: Record<string, number>) => HTMLDivElement
 
 export type SwapElementToProjectionType = (coordinates: Record<string, number>,
                                            projection: HTMLDivElement,
-                                           dropZoneRef: MutableRefObject<HTMLDivElement | null>) => void | Element
+                                           dropZoneRef: DropZoneRefType) => void | Element
 
 
 

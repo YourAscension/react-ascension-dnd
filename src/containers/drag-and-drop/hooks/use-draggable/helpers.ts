@@ -70,16 +70,3 @@ export const swapElementToProjection: SwapElementToProjectionType = (coordinates
   }
   return nodeBelowPointer
 };
-
-export const swapItems = (neededId:number, targetId: number, items: any)=>{
-  let localItems = [...items]
-  const neededItem = localItems.find(item=>item.id === neededId)
-  //@ts-ignore
-  localItems = localItems.filter(item=>item.id !== neededId)
-  console.log(localItems)
-  //@ts-ignore
-  const targetIndex= [...items].indexOf([...items].find(item=>item.id === targetId))
-  //@ts-ignore
-  localItems.splice(targetIndex, 0, neededItem);
-  return localItems
-}

@@ -1,25 +1,24 @@
-import { applyDraggableStyles, calculateShifts, createProjection, swapElementToProjection, swapItems } from "./helpers";
-import React, { useContext } from "react";
+import { applyDraggableStyles, calculateShifts, createProjection, swapElementToProjection } from "./helpers";
+import { useContext } from "react";
 import { DragAndDropContext } from "../../index";
+import { DraggableRefType } from "../../draggable/types";
 
-const useDraggable = (draggableRef: React.RefObject<HTMLDivElement>, id: number) => {
+const useDraggable = (draggableRef: DraggableRefType, draggingElementId: number) => {
   const {
-    isDragging,
     setIsDragging,
     dropZoneRef,
     elementsMapping,
-    //@ts-ignore
-    setItems
+    onSwapElement
   } = useContext(DragAndDropContext);
 
   let shiftX: number, shiftY: number;
   let projection: HTMLDivElement;
-  let elementSwapped: void | Element;
-  let currentElement: Element;
+  let foundElement: void | Element;
+  let elementToSwap: Element;
 
   const dragStartHandler = (event: PointerEvent) => {
-    if (draggableRef.current === null || dropZoneRef.current === null){
-      return
+    if (draggableRef.current === null || dropZoneRef.current === null) {
+      return;
     }
 
     const { clientX, clientY, pageX, pageY } = event;
@@ -36,13 +35,13 @@ const useDraggable = (draggableRef: React.RefObject<HTMLDivElement>, id: number)
 
     dropZoneRef.current.insertBefore(projection, draggableRef.current);
 
-    dropZoneRef.current?.addEventListener("pointermove", dragMoveHandler);
-    dropZoneRef.current?.addEventListener("pointerup", dragEndHandler);
+    dropZoneRef.current.addEventListener("pointermove", dragMoveHandler);
+    dropZoneRef.current.addEventListener("pointerup", dragEndHandler);
   };
 
   const dragMoveHandler = (event: PointerEvent) => {
-    if (draggableRef.current === null){
-      return
+    if (draggableRef.current === null) {
+      return;
     }
 
     const { pageX, pageY } = event;
@@ -52,16 +51,16 @@ const useDraggable = (draggableRef: React.RefObject<HTMLDivElement>, id: number)
      *  на основе координат определять над каким элементом  находится курсор и его смещать
      */
     draggableRef.current.hidden = true;
-    elementSwapped = swapElementToProjection({ pointerX: event.pageX, pointerY: event.pageY }, projection, dropZoneRef);
-    if (elementSwapped){
-      currentElement = elementSwapped
+    foundElement = swapElementToProjection({ pointerX: event.pageX, pointerY: event.pageY }, projection, dropZoneRef);
+    if (foundElement) {
+      elementToSwap = foundElement;
     }
     draggableRef.current.hidden = false;
   };
 
   const dragEndHandler = () => {
-    if (draggableRef.current === null || dropZoneRef.current === null){
-      return
+    if (draggableRef.current === null || dropZoneRef.current === null) {
+      return;
     }
 
     dropZoneRef.current.insertBefore(draggableRef.current, projection);
@@ -72,13 +71,12 @@ const useDraggable = (draggableRef: React.RefObject<HTMLDivElement>, id: number)
     dropZoneRef.current.removeEventListener("pointermove", dragMoveHandler);
     dropZoneRef.current.removeEventListener("pointerup", dragEndHandler);
 
-    if (currentElement){
-      // console.log(elementsMapping.current.get(currentElement))
-      const currentId = elementsMapping.current.get(currentElement);
-      console.log(currentId, id)
-      console.log(setItems)
-      //@ts-ignore
-       setItems((prev)=>swapItems(id, currentId, prev))
+    if (elementToSwap) {
+      const elementToSwapId = elementsMapping.current.get(elementToSwap);
+
+      if (elementToSwapId !== undefined) {
+        onSwapElement(draggingElementId, elementToSwapId);
+      }
     }
 
     setIsDragging(false);
