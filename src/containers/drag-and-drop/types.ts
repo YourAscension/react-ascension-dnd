@@ -7,11 +7,13 @@ type OnSwapElementType = (draggingElementId: number, elementToSwapId: number) =>
 
 export type DropZoneRefType = RefObject<HTMLDivElement>
 
+export type ElementsMappingRef = MutableRefObject<Map<Element, number>>
+
 export interface IDragAndDropContext {
   isDragging: boolean,
   setIsDragging: SetIsDraggingType,
   dropZoneRef: DropZoneRefType,
-  elementsMapping: MutableRefObject<Map<Element, number>>,
+  elementsMapping: ElementsMappingRef,
   onSwapElement: OnSwapElementType
 }
 
