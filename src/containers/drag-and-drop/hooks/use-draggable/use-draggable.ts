@@ -3,6 +3,13 @@ import { useContext } from "react";
 import { DragAndDropContext } from "../../index";
 import { DraggableRefType } from "../../draggable/types";
 
+/**TODO Пофиксить поведение когда мышь уходит за пределы контейнера и документа
+ * TODO Пофиксить баг с неудалением проекции если мышь вышла за пределы контейнера
+ * TODO Вернуть Item на первоначальную позицию если мышь ушла за пределы контейнера
+ * TODO Запретить вставать проекции на место элемента, который нельзя сдвигать
+ * TODO При горизонтальном положении иногда не сдвигаются крайние элементы
+ * TODO Создать границу, при наведении на которую будет триггерится DND*/
+
 const useDraggable = (draggableRef: DraggableRefType, draggingElementId: number) => {
   const {
     setIsDragging,
@@ -51,10 +58,15 @@ const useDraggable = (draggableRef: DraggableRefType, draggingElementId: number)
      *  на основе координат определять над каким элементом  находится курсор и его смещать
      */
     draggableRef.current.hidden = true;
-    foundElement = swapElementToProjection({ pointerX: event.pageX, pointerY: event.pageY }, projection, dropZoneRef);
+
+    foundElement = swapElementToProjection({
+      pointerX: event.pageX,
+      pointerY: event.pageY
+    }, projection, dropZoneRef, elementsMapping);
     if (foundElement) {
       elementToSwap = foundElement;
     }
+
     draggableRef.current.hidden = false;
   };
 
