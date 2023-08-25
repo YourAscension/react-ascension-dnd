@@ -3,13 +3,6 @@ import { useContext } from "react";
 import { DragAndDropContext } from "../../index";
 import { DraggableRefType } from "../../draggable/types";
 
-/**TODO Пофиксить поведение когда мышь уходит за пределы контейнера и документа
- * TODO Пофиксить баг с неудалением проекции если мышь вышла за пределы контейнера
- * TODO Вернуть Item на первоначальную позицию если мышь ушла за пределы контейнера
- * TODO Запретить вставать проекции на место элемента, который нельзя сдвигать
- * TODO При горизонтальном положении иногда не сдвигаются крайние элементы
- * TODO Создать границу, при наведении на которую будет триггерится DND*/
-
 const useDraggable = (draggableRef: DraggableRefType, draggingElementId: number) => {
   const {
     setIsDragging,
@@ -21,7 +14,7 @@ const useDraggable = (draggableRef: DraggableRefType, draggingElementId: number)
   let shiftX: number, shiftY: number;
   let projection: HTMLDivElement;
   let foundElement: void | Element;
-  let elementToSwap: Element;
+  let elementToSwap: void | Element;
 
   const dragStartHandler = (event: PointerEvent) => {
     if (draggableRef.current === null || dropZoneRef.current === null) {
@@ -29,6 +22,9 @@ const useDraggable = (draggableRef: DraggableRefType, draggingElementId: number)
     }
 
     const { clientX, clientY, pageX, pageY } = event;
+
+    const scrollTop = dropZoneRef.current.scrollTop;
+    const newPageX = pageX - scrollTop;
 
     setIsDragging(true);
 
@@ -42,8 +38,11 @@ const useDraggable = (draggableRef: DraggableRefType, draggingElementId: number)
 
     dropZoneRef.current.insertBefore(projection, draggableRef.current);
 
-    dropZoneRef.current.addEventListener("pointermove", dragMoveHandler);
-    dropZoneRef.current.addEventListener("pointerup", dragEndHandler);
+    document.addEventListener("pointermove", dragMoveHandler);
+    document.addEventListener("pointerup", dragEndHandler);
+    /**Завершать DND когда покидаем документ и когда открываем контекстное меню*/
+    document.addEventListener("mouseleave", dragEndHandler);
+    document.addEventListener("contextmenu", dragEndHandler);
   };
 
   const dragMoveHandler = (event: PointerEvent) => {
@@ -60,8 +59,8 @@ const useDraggable = (draggableRef: DraggableRefType, draggingElementId: number)
     draggableRef.current.hidden = true;
 
     foundElement = swapElementToProjection({
-      pointerX: event.pageX,
-      pointerY: event.pageY
+      pointerX: event.clientX,
+      pointerY: event.clientY
     }, projection, dropZoneRef, elementsMapping);
     if (foundElement) {
       elementToSwap = foundElement;
@@ -76,12 +75,14 @@ const useDraggable = (draggableRef: DraggableRefType, draggingElementId: number)
     }
 
     dropZoneRef.current.insertBefore(draggableRef.current, projection);
-    draggableRef.current.setAttribute("style", "");
+    draggableRef.current.removeAttribute("style");
 
     projection.remove();
 
-    dropZoneRef.current.removeEventListener("pointermove", dragMoveHandler);
-    dropZoneRef.current.removeEventListener("pointerup", dragEndHandler);
+    document.removeEventListener("pointermove", dragMoveHandler);
+    document.removeEventListener("pointerup", dragEndHandler);
+    document.removeEventListener("mouseleave", dragEndHandler);
+    document.removeEventListener("contextmenu", dragEndHandler);
 
     if (elementToSwap) {
       const elementToSwapId = elementsMapping.current.get(elementToSwap);
@@ -90,6 +91,10 @@ const useDraggable = (draggableRef: DraggableRefType, draggingElementId: number)
         onSwapElement(draggingElementId, elementToSwapId);
       }
     }
+    /**Фикс бага. Если не обнулить после предыдущего элемента и ещё раз на него нажать, то он
+     * будет меняться местом с соседним. Это ненормальное поведение.*/
+    foundElement = undefined;
+    elementToSwap = undefined;
 
     setIsDragging(false);
   };
