@@ -40,7 +40,8 @@ export const createProjection: CreateProjectionType = ({ height, width }) => {
 
   projection.classList.add("projection");
   projection.style.height = height.toString() + "px";
-  projection.style.width = width.toString() + "px";
+  projection.style.minWidth = width.toString() + "px";
+  projection.style.maxWidth = width.toString() + "px";
 
   return projection;
 };
@@ -76,7 +77,10 @@ export const swapElementToProjection: SwapElementToProjectionType = (coordinates
   nodeX = nodeX + window.pageXOffset;
   nodeY = nodeY + window.pageYOffset;
 
-  const scrollPosition = window.pageYOffset || document.documentElement.scrollTop || document.body.scrollTop;
+  const scrollPosition = {
+    x: window.pageXOffset || document.documentElement.scrollLeft || document.body.scrollLeft,
+    y: window.pageYOffset || document.documentElement.scrollTop || document.body.scrollTop
+  }
 
   if (projectionX === nodeX && projectionY > nodeY ||
     projectionY === nodeY && projectionX > nodeX) {
@@ -85,6 +89,8 @@ export const swapElementToProjection: SwapElementToProjectionType = (coordinates
   } else {
     dropZoneRef.current.insertBefore(projection, nodeBelowPointer.nextElementSibling);
   }
-  window.scrollTo(0, scrollPosition);
+
+  window.scrollTo(scrollPosition.x, scrollPosition.y);
+
   return nodeBelowPointer;
 };
