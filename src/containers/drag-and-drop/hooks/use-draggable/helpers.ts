@@ -54,20 +54,42 @@ export const swapElementToProjection: SwapElementToProjectionType = (coordinates
   }
 
   const { pointerX, pointerY } = coordinates;
-  const { x: projectionX, y: projectionY } = projection.getBoundingClientRect();
+  let { left: projectionX, top: projectionY } = projection.getBoundingClientRect();
 
-  const nodeBelowPointer = document.elementFromPoint(pointerX, pointerY);
+  projectionX = projectionX + window.pageXOffset;
+  projectionY = projectionY + window.pageYOffset;
 
-  if (!nodeBelowPointer || !elementsMapping.current.get(nodeBelowPointer)) {
+  let nodeBelowPointer = document.elementFromPoint(pointerX, pointerY);
+
+  if (!nodeBelowPointer) {
+    return;
+  }
+  /*Чтобы найти родительский контейнер**/
+  nodeBelowPointer = nodeBelowPointer.closest(".item");
+
+  // console.log(elementsMapping.current.get(nodeBelowPointer!));
+
+  if (!nodeBelowPointer || elementsMapping.current.get(nodeBelowPointer) === undefined) {
     return;
   }
 
-  const { x: nodeX, y: nodeY } = nodeBelowPointer.getBoundingClientRect();
+  let { left: nodeX, top: nodeY } = nodeBelowPointer.getBoundingClientRect();
 
-  if (projectionY > nodeY || projectionX > nodeX) {
+  nodeX = nodeX + window.pageXOffset;
+  nodeY = nodeY + window.pageYOffset;
+
+  console.log(nodeBelowPointer)
+  // console.log(`projectionY: ${projectionY} nodeY: ${nodeY}`)
+
+  if (projectionX === nodeX && projectionY > nodeY ||
+    projectionY === nodeY && projectionX > nodeX) {
+  //   if (projectionY > nodeY ||
+  //   projectionX > nodeX) {
     dropZoneRef.current.insertBefore(projection, nodeBelowPointer);
+    console.log('up')
   } else {
-    dropZoneRef.current.insertBefore(projection, nodeBelowPointer.nextElementSibling);
+    dropZoneRef.current.insertBefore(projection, nodeBelowPointer.nextSibling);
+    console.log('down')
   }
   return nodeBelowPointer;
 };

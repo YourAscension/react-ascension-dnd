@@ -1,24 +1,18 @@
 import React, { useState } from "react";
 import DragAndDrop from "./containers/drag-and-drop";
+import { generateItems, generateRandomRgbColor } from "./utils";
+import { IItems } from "./utils/types";
 
 function App() {
-
-  interface IItems {
-    id: number;
-    title: string;
-    isNotDraggable?: true;
-  }
-
-  const [items, setItems] = useState<IItems[]>([
-    { id: 1, title: "item 1" },
-    { id: 2, title: "item 2", isNotDraggable: true },
-    { id: 3, title: "item 3" },
-    { id: 999, title: "item 99" },
-    { id: 5, title: "item 5" }
-  ]);
+  const [items, setItems] = useState<IItems[]>(generateItems(4));
+  const [isColumn, setIsColumn] = useState<boolean>(true);
 
   const addNewItemHandler = () => {
-    setItems(prev => [...prev, { id: items.length + 1, title: "item " + (items.length + 1) }]);
+    setItems(prev => [...prev, {
+      id: items.length + 1,
+      title: "item " + (items.length + 1),
+      color: generateRandomRgbColor()
+    }]);
   };
 
   const swapItemsInArray = (draggingElementId: number, elementToSwapId: number, items: IItems[]) => {
@@ -41,34 +35,37 @@ function App() {
 
   return (
     <>
-      <section className='right-section'>
-      <button onClick={addNewItemHandler}>Add new item</button>
-      <DragAndDrop
-        onSwapElement={swapItemsHandler}
-      >
-        {
-          (dropZoneRef) => {
-            return <div ref={dropZoneRef} className="container">
-              {
-                items.map(item => {
-                  if (item?.isNotDraggable === true) {
-                    return <div className="item item-freeze" key={item.id}>{item.title}</div>;
-                  }
-                  return <DragAndDrop.Draggable key={item.id} id={item.id}>
-                    {
-                      (draggableRef) => <div ref={draggableRef}>{item.title}</div>
-                    }
-                  </DragAndDrop.Draggable>;
-                })
-              }
-            </div>
-              ;
-          }}
-      </DragAndDrop>
+      <section className="section-one">
+        <div className="items-counter">{items.map(item => <div key={item.id} className="item-count"
+                                                               style={{ backgroundColor: item.color }}>{item.id}</div>)}</div>
       </section>
-      <section className="left-section">
-        <code>{JSON.stringify(items.map(item=>item.id))}</code>
+      <section className="section-two">
+        <button onClick={()=>setIsColumn(!isColumn)}>Set direction: { isColumn ? 'column' : 'row'}</button>
+        <button onClick={addNewItemHandler}>Add new item</button>
+        <DragAndDrop
+          onSwapElement={swapItemsHandler}
+        >
+          {
+            (dropZoneRef) => {
+              return <div ref={dropZoneRef} className="container" style={ {flexDirection: isColumn ? 'column' : 'row'}}>
+                {
+                  items.map(item => {
+                    return <DragAndDrop.Draggable key={item.id} id={item.id}>
+                      {
+                        (draggableRef) => <div ref={draggableRef}>
+                          <div className="item-header" style={{ backgroundColor: item.color }}></div>
+                          <div className="item-content">{item.title}</div>
+                        </div>
+                      }
+                    </DragAndDrop.Draggable>;
+                  })
+                }
+              </div>
+                ;
+            }}
+        </DragAndDrop>
       </section>
+
     </>
   )
     ;
