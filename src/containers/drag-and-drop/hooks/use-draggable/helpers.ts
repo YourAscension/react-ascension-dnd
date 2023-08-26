@@ -67,8 +67,6 @@ export const swapElementToProjection: SwapElementToProjectionType = (coordinates
   /*Чтобы найти родительский контейнер**/
   nodeBelowPointer = nodeBelowPointer.closest(".item");
 
-  // console.log(elementsMapping.current.get(nodeBelowPointer!));
-
   if (!nodeBelowPointer || elementsMapping.current.get(nodeBelowPointer) === undefined) {
     return;
   }
@@ -78,18 +76,15 @@ export const swapElementToProjection: SwapElementToProjectionType = (coordinates
   nodeX = nodeX + window.pageXOffset;
   nodeY = nodeY + window.pageYOffset;
 
-  console.log(nodeBelowPointer)
-  // console.log(`projectionY: ${projectionY} nodeY: ${nodeY}`)
+  const scrollPosition = window.pageYOffset || document.documentElement.scrollTop || document.body.scrollTop;
 
   if (projectionX === nodeX && projectionY > nodeY ||
     projectionY === nodeY && projectionX > nodeX) {
-  //   if (projectionY > nodeY ||
-  //   projectionX > nodeX) {
+
     dropZoneRef.current.insertBefore(projection, nodeBelowPointer);
-    console.log('up')
   } else {
-    dropZoneRef.current.insertBefore(projection, nodeBelowPointer.nextSibling);
-    console.log('down')
+    dropZoneRef.current.insertBefore(projection, nodeBelowPointer.nextElementSibling);
   }
+  window.scrollTo(0, scrollPosition);
   return nodeBelowPointer;
 };

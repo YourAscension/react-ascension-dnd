@@ -23,9 +23,6 @@ const useDraggable = (draggableRef: DraggableRefType, draggingElementId: number)
 
     const { clientX, clientY, pageX, pageY } = event;
 
-    const scrollTop = dropZoneRef.current.scrollTop;
-    const newPageX = pageX - scrollTop;
-
     setIsDragging(true);
 
     const { left: elementX, top: elementY, height, width } = draggableRef.current.getBoundingClientRect();
@@ -84,17 +81,17 @@ const useDraggable = (draggableRef: DraggableRefType, draggingElementId: number)
     document.removeEventListener("mouseleave", dragEndHandler);
     document.removeEventListener("contextmenu", dragEndHandler);
 
-    // if (elementToSwap) {
-    //   const elementToSwapId = elementsMapping.current.get(elementToSwap);
-    //
-    //   if (elementToSwapId !== undefined) {
-    //     onSwapElement(draggingElementId, elementToSwapId);
-    //   }
-    // }
-    // /**Фикс бага. Если не обнулить после предыдущего элемента и ещё раз на него нажать, то он
-    //  * будет меняться местом с соседним. Это ненормальное поведение.*/
-    // foundElement = undefined;
-    // elementToSwap = undefined;
+    if (elementToSwap) {
+      const elementToSwapId = elementsMapping.current.get(elementToSwap);
+
+      if (elementToSwapId !== undefined) {
+        onSwapElement(draggingElementId, elementToSwapId);
+      }
+    }
+    /**Фикс бага. Если не обнулить после предыдущего элемента и ещё раз на него нажать, то он
+     * будет меняться местом с соседним. Это ненормальное поведение.*/
+    foundElement = undefined;
+    elementToSwap = undefined;
 
     setIsDragging(false);
   };
