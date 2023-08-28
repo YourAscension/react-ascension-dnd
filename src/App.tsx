@@ -9,8 +9,8 @@ function App() {
 
   const addNewItemHandler = () => {
     setItems(prev => [...prev, {
-      id: items.length + 1,
-      title: "item " + (items.length + 1),
+      id: items.length,
+      title: "item " + items.length,
       color: generateRandomRgbColor()
     }]);
   };

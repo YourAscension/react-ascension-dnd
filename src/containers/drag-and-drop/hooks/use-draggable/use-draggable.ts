@@ -50,6 +50,28 @@ const useDraggable = (draggableRef: DraggableRefType, draggingElementId: number)
     const { pageX, pageY } = event;
 
     applyDraggableStyles({ pageX, pageY, shiftX, shiftY }, draggableRef);
+
+
+//     const viewportWidth = window.innerWidth;
+//     const viewportHeight = window.innerHeight;
+//     const rect = draggableRef.current.getBoundingClientRect();
+//
+//     if (rect.right > viewportWidth) {
+//       // Элемент выходит за правый край вьюпорта, прокручиваем вправо
+//       window.scrollBy(rect.right - viewportWidth, 0);
+//     } else if (rect.left < 0) {
+//       // Элемент выходит за левый край вьюпорта, прокручиваем влево
+//       window.scrollBy(rect.left, 0);
+//     }
+//
+//     if (rect.bottom > viewportHeight) {
+// // Элемент выходит за нижний край вьюпорта, прокручиваем вниз
+//       window.scrollBy(0, rect.bottom - viewportHeight);
+//     } else if (rect.top < 0 && window.scrollY > 0) {
+// // Элемент выходит за верхний край вьюпорта, прокручиваем вверх
+//       window.scrollBy(0, rect.top);
+//     }
+
     /**TODO Попробовать добавить все элементы и их координаты расположения в контекст,
      *  на основе координат определять над каким элементом  находится курсор и его смещать
      */

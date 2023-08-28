@@ -23,8 +23,12 @@ export const applyDraggableStyles: ApplyDraggableStylesType = (coordinates,
   const { pageX, pageY, shiftX, shiftY } = coordinates;
   const { height, width } = draggableRef.current.getBoundingClientRect();
 
-  const translatedX = pageX - shiftX;
-  const translatedY = pageY - shiftY;
+  let translatedX = pageX - shiftX;
+  let translatedY = pageY - shiftY;
+
+  translatedY = translatedY > 0 ? translatedY : 0
+  translatedX = translatedX > 0 ? translatedX : 0
+
 
   draggableRef.current.style.position = "absolute";
   draggableRef.current.style.top = 0 + "px";
