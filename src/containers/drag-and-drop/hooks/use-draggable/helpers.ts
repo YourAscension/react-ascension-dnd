@@ -9,10 +9,22 @@ export const calculateShifts: CoordinatesHandlerType = (coordinates) => {
   const { clientX, clientY, elementX, elementY } = coordinates;
 
   return {
-    shiftX: clientX - elementX,
-    shiftY: clientY - elementY
+    startShiftX: clientX - elementX,
+    startShiftY: clientY - elementY
   };
 };
+
+export const calculateCurrentCoords: CoordinatesHandlerType = (coordinates) =>{
+  const { pageX, pageY, startShiftX, startShiftY } = coordinates;
+
+  let translatedX = pageX - startShiftX;
+  let translatedY = pageY - startShiftY;
+
+  return {
+    elementCurrentX: translatedX > 0 ? translatedX : 0,
+    elementCurrentY: translatedY > 0 ? translatedY : 0
+  }
+}
 
 export const applyDraggableStyles: ApplyDraggableStylesType = (coordinates,
                                                                draggableRef) => {
@@ -20,22 +32,15 @@ export const applyDraggableStyles: ApplyDraggableStylesType = (coordinates,
     return;
   }
 
-  const { pageX, pageY, shiftX, shiftY } = coordinates;
+  const {elementCurrentX, elementCurrentY } = coordinates;
   const { height, width } = draggableRef.current.getBoundingClientRect();
-
-  let translatedX = pageX - shiftX;
-  let translatedY = pageY - shiftY;
-
-  translatedY = translatedY > 0 ? translatedY : 0
-  translatedX = translatedX > 0 ? translatedX : 0
-
 
   draggableRef.current.style.position = "absolute";
   draggableRef.current.style.top = 0 + "px";
   draggableRef.current.style.left = 0 + "px";
   draggableRef.current.style.height = height + "px";
   draggableRef.current.style.width = width + "px";
-  draggableRef.current.style.transform = `translate(${translatedX}px, ${translatedY}px)`;
+  draggableRef.current.style.transform = `translate(${elementCurrentX}px, ${elementCurrentY}px)`;
   draggableRef.current.style.cursor = "grabbing";
 };
 

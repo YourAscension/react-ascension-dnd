@@ -1,4 +1,10 @@
-import { applyDraggableStyles, calculateShifts, createProjection, swapElementToProjection } from "./helpers";
+import {
+  applyDraggableStyles,
+  calculateCurrentCoords,
+  calculateShifts,
+  createProjection,
+  swapElementToProjection
+} from "./helpers";
 import { useContext } from "react";
 import { DragAndDropContext } from "../../index";
 import { DraggableRefType } from "../../draggable/types";
@@ -11,36 +17,45 @@ const useDraggable = (draggableRef: DraggableRefType, draggingElementId: number)
     onSwapElement
   } = useContext(DragAndDropContext);
 
-  let shiftX: number, shiftY: number;
+  let startShiftX: number, startShiftY: number;
+  let elementCurrentX: number, elementCurrentY: number;
   let projection: HTMLDivElement;
   let foundElement: void | Element;
   let elementToSwap: void | Element;
+
 
   const dragStartHandler = (event: PointerEvent) => {
     if (draggableRef.current === null || dropZoneRef.current === null) {
       return;
     }
-
-    const { clientX, clientY, pageX, pageY } = event;
-
     setIsDragging(true);
 
+    const { clientX, clientY, pageX, pageY } = event;
     const { left: elementX, top: elementY, height, width } = draggableRef.current.getBoundingClientRect();
 
-    ({ shiftX, shiftY } = calculateShifts({ clientX, clientY, elementX, elementY }));
-
-    applyDraggableStyles({ pageX, pageY, shiftX, shiftY }, draggableRef);
+    ({ startShiftX, startShiftY } = calculateShifts({ clientX, clientY, elementX, elementY }));
+    ({ elementCurrentX, elementCurrentY } = calculateCurrentCoords({ pageX, pageY, startShiftX, startShiftY }));
+    applyDraggableStyles({ elementCurrentX, elementCurrentY }, draggableRef);
 
     projection = createProjection({ height, width });
-
     dropZoneRef.current.insertBefore(projection, draggableRef.current);
 
     document.addEventListener("pointermove", dragMoveHandler);
+    // document.addEventListener('wheel', dragScrollHandler)
     document.addEventListener("pointerup", dragEndHandler);
     /**Завершать DND когда покидаем документ и когда открываем контекстное меню*/
     document.addEventListener("mouseleave", dragEndHandler);
     document.addEventListener("contextmenu", dragEndHandler);
   };
+
+  const dragScrollHandler = (event: Event) => {
+    const scrollY = window.pageYOffset || document.documentElement.scrollTop;
+//@ts-ignore
+    const pageY = event.clientY + scrollY;
+
+    ({ elementCurrentY} = calculateCurrentCoords({ pageY, startShiftX, startShiftY }));
+    applyDraggableStyles({  elementCurrentX, elementCurrentY }, draggableRef);
+  }
 
   const dragMoveHandler = (event: PointerEvent) => {
     if (draggableRef.current === null) {
@@ -48,8 +63,8 @@ const useDraggable = (draggableRef: DraggableRefType, draggingElementId: number)
     }
 
     const { pageX, pageY } = event;
-
-    applyDraggableStyles({ pageX, pageY, shiftX, shiftY }, draggableRef);
+    ({ elementCurrentX, elementCurrentY} = calculateCurrentCoords({ pageX, pageY, startShiftX, startShiftY }));
+    applyDraggableStyles({  elementCurrentX, elementCurrentY }, draggableRef);
 
 
 //     const viewportWidth = window.innerWidth;
