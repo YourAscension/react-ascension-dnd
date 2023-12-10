@@ -1,48 +1,8 @@
 import {
-  ApplyDraggableStylesType,
-  CoordinatesHandlerType,
   CreateProjectionType,
-  SwapElementToProjectionType
+  SwapElementToProjectionType,
+  SwapElementToProjectionTypeNew
 } from "./types";
-
-export const calculateShifts: CoordinatesHandlerType = (coordinates) => {
-  const { clientX, clientY, elementX, elementY } = coordinates;
-
-  return {
-    startShiftX: clientX - elementX,
-    startShiftY: clientY - elementY
-  };
-};
-
-export const calculateCurrentCoords: CoordinatesHandlerType = (coordinates) =>{
-  const { pageX, pageY, startShiftX, startShiftY } = coordinates;
-
-  let translatedX = pageX - startShiftX;
-  let translatedY = pageY - startShiftY;
-
-  return {
-    elementCurrentX: translatedX > 0 ? translatedX : 0,
-    elementCurrentY: translatedY > 0 ? translatedY : 0
-  }
-}
-
-export const applyDraggableStyles: ApplyDraggableStylesType = (coordinates,
-                                                               draggableRef) => {
-  if (draggableRef.current === null) {
-    return;
-  }
-
-  const {elementCurrentX, elementCurrentY } = coordinates;
-  const { height, width } = draggableRef.current.getBoundingClientRect();
-
-  draggableRef.current.style.position = "absolute";
-  draggableRef.current.style.top = 0 + "px";
-  draggableRef.current.style.left = 0 + "px";
-  draggableRef.current.style.height = height + "px";
-  draggableRef.current.style.width = width + "px";
-  draggableRef.current.style.transform = `translate(${elementCurrentX}px, ${elementCurrentY}px)`;
-  draggableRef.current.style.cursor = "grabbing";
-};
 
 export const createProjection: CreateProjectionType = ({ height, width }) => {
   const projection = document.createElement("div");
@@ -99,7 +59,50 @@ export const swapElementToProjection: SwapElementToProjectionType = (coordinates
     dropZoneRef.current.insertBefore(projection, nodeBelowPointer.nextElementSibling);
   }
 
-  window.scrollTo(scrollPosition.x, scrollPosition.y);
 
   return nodeBelowPointer;
 };
+
+export const swapElementToProjectionNew: SwapElementToProjectionTypeNew = (event,
+                                                                     projection,
+                                                                     dropZoneRef,
+                                                                     elementsMapping) => {
+  if (dropZoneRef.current === null) {
+    return;
+  }
+
+  const { clientX: pointerClientX, clientY: pointerClientY, pageX: pointerPageX, pageY: pointerPageY } = event
+
+  let nodeBelowPointer = document.elementFromPoint(pointerClientX, pointerClientY);
+
+  if (nodeBelowPointer !== null){
+    nodeBelowPointer = nodeBelowPointer.closest('[data-dnd]');
+
+
+    if (nodeBelowPointer !== null && elementsMapping.current.get(nodeBelowPointer) !== undefined) {
+      let { left: projectionX, top: projectionY } = projection.getBoundingClientRect();
+      let { left: nodeBelowPointerX, top: nodeBelowPointerY } = nodeBelowPointer.getBoundingClientRect();
+
+      projectionX = projectionX + window.scrollX;
+      projectionY = projectionY + window.scrollY;
+      nodeBelowPointerX = nodeBelowPointerX + window.scrollX;
+      nodeBelowPointerY = nodeBelowPointerY + window.scrollY;
+      const scrollPosition = {
+        x: window.pageXOffset || document.documentElement.scrollLeft || document.body.scrollLeft,
+        y: window.pageYOffset || document.documentElement.scrollTop || document.body.scrollTop
+      }
+
+      if (projectionX === nodeBelowPointerX && projectionY > nodeBelowPointerY ||
+        projectionY === projectionY && projectionX > nodeBelowPointerX) {
+
+        dropZoneRef.current.insertBefore(projection, nodeBelowPointer);
+      } else {
+        dropZoneRef.current.insertBefore(projection, nodeBelowPointer.nextElementSibling);
+      }
+
+      window.scrollTo(scrollPosition.x, scrollPosition.y);
+
+      return nodeBelowPointer
+    }
+  }
+}

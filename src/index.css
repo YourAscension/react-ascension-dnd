@@ -49,6 +49,8 @@ button:hover {
     width: 150px;
     height: 250px;
     background-color: var(--primary-color-dark-1-1);
+    animation: moveItem 0.3s ease-in-out;
+    /*transition: all 0.5s ease-out;*/
 }
 
 .item-header {
@@ -66,6 +68,7 @@ button:hover {
     gap: 40px;
     display: flex;
     flex-direction: row;
+    transition: all 0.5s ease-out;
 }
 
 
@@ -87,3 +90,14 @@ button:hover {
     color: black;
     padding: 10px;
 }
+
+/*@keyframes moveItem {*/
+/*    from {*/
+/*        opacity: 0;*/
+/*        transform: translateX(-100px);*/
+/*    }*/
+/*    to {*/
+/*        opacity: 1;*/
+/*        transform: translateY(0);*/
+/*    }*/
+/*}*/

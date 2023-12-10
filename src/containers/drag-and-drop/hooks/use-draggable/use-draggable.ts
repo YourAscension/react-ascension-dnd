@@ -1,9 +1,6 @@
 import {
-  applyDraggableStyles,
-  calculateCurrentCoords,
-  calculateShifts,
   createProjection,
-  swapElementToProjection
+  swapElementToProjectionNew
 } from "./helpers";
 import { useContext } from "react";
 import { DragAndDropContext } from "../../index";
@@ -17,11 +14,11 @@ const useDraggable = (draggableRef: DraggableRefType, draggingElementId: number)
     onSwapElement
   } = useContext(DragAndDropContext);
 
-  let startShiftX: number, startShiftY: number;
-  let elementCurrentX: number, elementCurrentY: number;
   let projection: HTMLDivElement;
   let foundElement: void | Element;
   let elementToSwap: void | Element;
+
+  let startX: number, startY: number;
 
 
   const dragStartHandler = (event: PointerEvent) => {
@@ -30,41 +27,67 @@ const useDraggable = (draggableRef: DraggableRefType, draggingElementId: number)
     }
     setIsDragging(true);
 
-    const { clientX, clientY, pageX, pageY } = event;
-    const { left: elementX, top: elementY, height, width } = draggableRef.current.getBoundingClientRect();
+    const { pageX, pageY } = event;
+    const { height, width, top, left } = draggableRef.current.getBoundingClientRect();
 
-    ({ startShiftX, startShiftY } = calculateShifts({ clientX, clientY, elementX, elementY }));
-    ({ elementCurrentX, elementCurrentY } = calculateCurrentCoords({ pageX, pageY, startShiftX, startShiftY }));
-    applyDraggableStyles({ elementCurrentX, elementCurrentY }, draggableRef);
+    /** Вычисляем первоначальные координаты translateX и translateY элемента в документе
+     * https://doka.guide/js/element-positioning-js/ */
+    const style = window.getComputedStyle(draggableRef.current);
+    const transform = new DOMMatrixReadOnly(style.transform);
+    const translateX = transform.m41;
+    const translateY = transform.m42;
 
+    startX = pageX - translateX;
+    startY = pageY - translateY;
+
+    /** Создаём проекцию на основе спек оригинала, добавляем проекцию
+     * ДО изменения позиционирования оригинала, чтобы не происходил ненужный скролл */
     projection = createProjection({ height, width });
     dropZoneRef.current.insertBefore(projection, draggableRef.current);
 
+
+    /** Помещаем элемент на то же самое место, что из без absolute. absolute необходим,
+     * для того, чтобы элемент был вне потока.
+     * т.к. position стал absolute, то для top и left нужно задать координаты относительно ДОКУМЕНТА
+     * https://learn.javascript.ru/coordinates#getCoords*/
+    draggableRef.current.style.position = "absolute";
+    draggableRef.current.style.top = `${top + window.scrollY}px`;
+    draggableRef.current.style.left = `${left + window.scrollX}px`;
+
+
     document.addEventListener("pointermove", dragMoveHandler);
-    // document.addEventListener('wheel', dragScrollHandler)
     document.addEventListener("pointerup", dragEndHandler);
-    /**Завершать DND когда покидаем документ и когда открываем контекстное меню*/
+
+    // window.addEventListener('wheel', dragScrollHandler)
+    // /**Завершать DND когда покидаем документ и когда открываем контекстное меню*/
     document.addEventListener("mouseleave", dragEndHandler);
     document.addEventListener("contextmenu", dragEndHandler);
+
   };
 
-  const dragScrollHandler = (event: Event) => {
-    const scrollY = window.pageYOffset || document.documentElement.scrollTop;
-//@ts-ignore
-    const pageY = event.clientY + scrollY;
+  const dragScrollHandler = (event: any) => {
+    if (draggableRef.current === null) {
+      return;
+    }
+    //
+    // const x = event.pageX - startX;
+    // const y = event.pageY - startY;
+    //
+    // draggableRef.current.style.transform = `translate(${x}px, ${y}px)`;
 
-    ({ elementCurrentY} = calculateCurrentCoords({ pageY, startShiftX, startShiftY }));
-    applyDraggableStyles({  elementCurrentX, elementCurrentY }, draggableRef);
-  }
+    // ({ elementCurrentY } = calculateCurrentCoords({ pageY, startShiftX, startShiftY }));
+    // applyDraggableStyles({ elementCurrentX, elementCurrentY }, draggableRef);
+  };
 
   const dragMoveHandler = (event: PointerEvent) => {
     if (draggableRef.current === null) {
       return;
     }
 
-    const { pageX, pageY } = event;
-    ({ elementCurrentX, elementCurrentY} = calculateCurrentCoords({ pageX, pageY, startShiftX, startShiftY }));
-    applyDraggableStyles({  elementCurrentX, elementCurrentY }, draggableRef);
+    const x = event.pageX - startX;
+    const y = event.pageY - startY;
+
+    draggableRef.current.style.transform = `translate(${x}px, ${y}px)`;
 
 
 //     const viewportWidth = window.innerWidth;
@@ -92,15 +115,15 @@ const useDraggable = (draggableRef: DraggableRefType, draggingElementId: number)
      */
     draggableRef.current.hidden = true;
 
-    foundElement = swapElementToProjection({
-      pointerX: event.clientX,
-      pointerY: event.clientY
-    }, projection, dropZoneRef, elementsMapping);
+    foundElement = swapElementToProjectionNew(event, projection, dropZoneRef, elementsMapping);
+
     if (foundElement) {
       elementToSwap = foundElement;
     }
 
     draggableRef.current.hidden = false;
+
+
   };
 
   const dragEndHandler = () => {
@@ -108,15 +131,17 @@ const useDraggable = (draggableRef: DraggableRefType, draggingElementId: number)
       return;
     }
 
-    dropZoneRef.current.insertBefore(draggableRef.current, projection);
-    draggableRef.current.removeAttribute("style");
+    //TODO: попробовать сделать анимации
+    // const { top, left } = projection.getBoundingClientRect();
 
+    // draggableRef.current.style.transition = "all 0.3s ease-out";
+    // draggableRef.current.style.transform = "translate(0px, 0px)";
+    // draggableRef.current.style.top = `${top + window.scrollY}px`;
+    // draggableRef.current.style.left = `${left + window.scrollX}px`;
+
+
+    // setTimeout(() => {
     projection.remove();
-
-    document.removeEventListener("pointermove", dragMoveHandler);
-    document.removeEventListener("pointerup", dragEndHandler);
-    document.removeEventListener("mouseleave", dragEndHandler);
-    document.removeEventListener("contextmenu", dragEndHandler);
 
     if (elementToSwap) {
       const elementToSwapId = elementsMapping.current.get(elementToSwap);
@@ -125,12 +150,21 @@ const useDraggable = (draggableRef: DraggableRefType, draggingElementId: number)
         onSwapElement(draggingElementId, elementToSwapId);
       }
     }
-    /**Фикс бага. Если не обнулить после предыдущего элемента и ещё раз на него нажать, то он
-     * будет меняться местом с соседним. Это ненормальное поведение.*/
+
+    // /**Фикс бага. Если не обнулить после предыдущего элемента и ещё раз на него нажать, то он
+    //  * будет меняться местом с соседним. Это ненормальное поведение.*/
     foundElement = undefined;
     elementToSwap = undefined;
-
+    draggableRef.current.removeAttribute("style");
     setIsDragging(false);
+
+
+    document.removeEventListener("pointermove", dragMoveHandler);
+    document.removeEventListener("pointerup", dragEndHandler);
+    document.removeEventListener("mouseleave", dragEndHandler);
+    document.removeEventListener("contextmenu", dragEndHandler);
+
+
   };
 
   return dragStartHandler;

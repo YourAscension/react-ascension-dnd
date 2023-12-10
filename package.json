@@ -17,7 +17,7 @@
     "web-vitals": "^2.1.4"
   },
   "scripts": {
- 2    "start": "WATCHPACK_POLLING=true react-scripts start",
+    "start": "WATCHPACK_POLLING=true react-scripts start",
     "start:2": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",

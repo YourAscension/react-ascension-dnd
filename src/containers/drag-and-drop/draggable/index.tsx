@@ -19,9 +19,13 @@ const Draggable: FC<IDraggableProps> = (props) => {
     draggableRef.current.addEventListener("pointerdown", dragStartHandler);
     // draggableRef.current.classList.add(`item`, id.toString());
     draggableRef.current.classList.add(`item`);
+    draggableRef.current.setAttribute('data-dnd', 'draggable')
     draggableRef.current.ondragstart = () => false;
 
+    const {top, left} = draggableRef.current.getBoundingClientRect()
+
     elementsMapping.current.set(draggableRef.current, id);
+
   };
 
   useEffect(() => {
