@@ -27,7 +27,7 @@ const useDraggable = (draggableRef: DraggableRefType, draggingElementId: number)
     }
     setIsDragging(true);
 
-    const { pageX, pageY } = event;
+    const { clientX, clientY } = event;
     const { height, width, top, left } = draggableRef.current.getBoundingClientRect();
 
     /** Вычисляем первоначальные координаты translateX и translateY элемента в документе
@@ -37,8 +37,8 @@ const useDraggable = (draggableRef: DraggableRefType, draggingElementId: number)
     const translateX = transform.m41;
     const translateY = transform.m42;
 
-    startX = pageX - translateX;
-    startY = pageY - translateY;
+    startX = clientX + translateX;
+    startY = clientY + translateY;
 
     /** Создаём проекцию на основе спек оригинала, добавляем проекцию
      * ДО изменения позиционирования оригинала, чтобы не происходил ненужный скролл */
@@ -50,15 +50,18 @@ const useDraggable = (draggableRef: DraggableRefType, draggingElementId: number)
      * для того, чтобы элемент был вне потока.
      * т.к. position стал absolute, то для top и left нужно задать координаты относительно ДОКУМЕНТА
      * https://learn.javascript.ru/coordinates#getCoords*/
-    draggableRef.current.style.position = "absolute";
-    draggableRef.current.style.top = `${top + window.scrollY}px`;
-    draggableRef.current.style.left = `${left + window.scrollX}px`;
+    draggableRef.current.style.position = "fixed";
+    draggableRef.current.style.top = `${top}px`;
+    draggableRef.current.style.left = `${left}px`;
+    draggableRef.current.style.width = `${width}px`
+    draggableRef.current.style.height = `${height}px`
+
 
 
     document.addEventListener("pointermove", dragMoveHandler);
     document.addEventListener("pointerup", dragEndHandler);
 
-    // window.addEventListener('wheel', dragScrollHandler)
+    window.addEventListener("wheel", dragScrollHandler);
     // /**Завершать DND когда покидаем документ и когда открываем контекстное меню*/
     document.addEventListener("mouseleave", dragEndHandler);
     document.addEventListener("contextmenu", dragEndHandler);
@@ -69,14 +72,16 @@ const useDraggable = (draggableRef: DraggableRefType, draggingElementId: number)
     if (draggableRef.current === null) {
       return;
     }
-    //
-    // const x = event.pageX - startX;
-    // const y = event.pageY - startY;
-    //
-    // draggableRef.current.style.transform = `translate(${x}px, ${y}px)`;
 
-    // ({ elementCurrentY } = calculateCurrentCoords({ pageY, startShiftX, startShiftY }));
-    // applyDraggableStyles({ elementCurrentX, elementCurrentY }, draggableRef);
+    draggableRef.current.hidden = true;
+
+    foundElement = swapElementToProjectionNew(event, projection, dropZoneRef, elementsMapping);
+
+    if (foundElement) {
+      elementToSwap = foundElement;
+    }
+
+    draggableRef.current.hidden = false;
   };
 
   const dragMoveHandler = (event: PointerEvent) => {
@@ -84,31 +89,30 @@ const useDraggable = (draggableRef: DraggableRefType, draggingElementId: number)
       return;
     }
 
-    const x = event.pageX - startX;
-    const y = event.pageY - startY;
+    const x = event.clientX - startX;
+    const y = event.clientY - startY;
 
     draggableRef.current.style.transform = `translate(${x}px, ${y}px)`;
 
 
-//     const viewportWidth = window.innerWidth;
-//     const viewportHeight = window.innerHeight;
-//     const rect = draggableRef.current.getBoundingClientRect();
-//
-//     if (rect.right > viewportWidth) {
-//       // Элемент выходит за правый край вьюпорта, прокручиваем вправо
-//       window.scrollBy(rect.right - viewportWidth, 0);
-//     } else if (rect.left < 0) {
-//       // Элемент выходит за левый край вьюпорта, прокручиваем влево
-//       window.scrollBy(rect.left, 0);
-//     }
-//
-//     if (rect.bottom > viewportHeight) {
-// // Элемент выходит за нижний край вьюпорта, прокручиваем вниз
-//       window.scrollBy(0, rect.bottom - viewportHeight);
-//     } else if (rect.top < 0 && window.scrollY > 0) {
-// // Элемент выходит за верхний край вьюпорта, прокручиваем вверх
-//       window.scrollBy(0, rect.top);
-//     }
+    const viewportWidth = window.innerWidth;
+    const viewportHeight = window.innerHeight;
+    const rect = draggableRef.current.getBoundingClientRect();
+
+    if (rect.right > viewportWidth) {
+      // Элемент выходит за правый край вьюпорта, прокручиваем вправо
+      window.scrollBy(rect.right - viewportWidth, 0);
+    } else if (rect.left < 0) {
+      // Элемент выходит за левый край вьюпорта, прокручиваем влево
+      window.scrollBy(rect.left, 0);
+    }
+    if (rect.bottom > viewportHeight) {
+      // Элемент выходит за нижний край вьюпорта, прокручиваем вниз
+      window.scrollBy(0, rect.bottom - viewportHeight);
+    } else if (rect.top < 0 && window.scrollY > 0) {
+      // Элемент выходит за верхний край вьюпорта, прокручиваем вверх
+      window.scrollBy(0, rect.top);
+    }
 
     /**TODO Попробовать добавить все элементы и их координаты расположения в контекст,
      *  на основе координат определять над каким элементом  находится курсор и его смещать
