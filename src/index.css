@@ -68,7 +68,7 @@ button:hover {
     gap: 40px;
     display: flex;
     flex-direction: row;
-    transition: all 0.5s ease-out;
+    border: 1px solid yellow;
 }
 
 

@@ -61,7 +61,7 @@ const useDraggable = (draggableRef: DraggableRefType, draggingElementId: number)
     document.addEventListener("pointermove", dragMoveHandler);
     document.addEventListener("pointerup", dragEndHandler);
 
-    window.addEventListener("wheel", dragScrollHandler);
+    // window.addEventListener("wheel", dragScrollHandler);
     // /**Завершать DND когда покидаем документ и когда открываем контекстное меню*/
     document.addEventListener("mouseleave", dragEndHandler);
     document.addEventListener("contextmenu", dragEndHandler);
@@ -118,6 +118,15 @@ const useDraggable = (draggableRef: DraggableRefType, draggingElementId: number)
      *  на основе координат определять над каким элементом  находится курсор и его смещать
      */
     draggableRef.current.hidden = true;
+    const node = document.elementFromPoint(event.clientX, event.clientY)
+
+    if (node !== null && node.hasAttribute('data-dropzone')) {
+      console.log(node)
+    }
+    else {
+      console.clear()
+    }
+
 
     foundElement = swapElementToProjectionNew(event, projection, dropZoneRef, elementsMapping);
 

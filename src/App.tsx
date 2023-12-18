@@ -73,6 +73,7 @@ function App() {
                 ref={dropZoneRef}
                 className="container"
                 style={{ flexDirection: isColumn ? "column" : "row" }}
+                data-dropzone="dropzone"
               >
                 {items.map((item) => {
                   return (
