@@ -1,46 +1,16 @@
 import {
-  ApplyDraggableStylesType,
-  CoordinatesHandlerType,
   CreateProjectionType,
-  SwapElementToProjectionType
+  SwapElementToProjectionType,
+  SwapElementToProjectionTypeNew
 } from "./types";
-
-export const calculateShifts: CoordinatesHandlerType = (coordinates) => {
-  const { clientX, clientY, elementX, elementY } = coordinates;
-
-  return {
-    shiftX: clientX - elementX,
-    shiftY: clientY - elementY
-  };
-};
-
-export const applyDraggableStyles: ApplyDraggableStylesType = (coordinates,
-                                                               draggableRef) => {
-  if (draggableRef.current === null) {
-    return;
-  }
-
-  const { pageX, pageY, shiftX, shiftY } = coordinates;
-  const { height, width } = draggableRef.current.getBoundingClientRect();
-
-  const translatedX = pageX - shiftX;
-  const translatedY = pageY - shiftY;
-
-  draggableRef.current.style.position = "absolute";
-  draggableRef.current.style.top = 0 + "px";
-  draggableRef.current.style.left = 0 + "px";
-  draggableRef.current.style.height = height + "px";
-  draggableRef.current.style.width = width + "px";
-  draggableRef.current.style.transform = `translate(${translatedX}px, ${translatedY}px)`;
-  draggableRef.current.style.cursor = "grabbing";
-};
 
 export const createProjection: CreateProjectionType = ({ height, width }) => {
   const projection = document.createElement("div");
 
   projection.classList.add("projection");
   projection.style.height = height.toString() + "px";
-  projection.style.width = width.toString() + "px";
+  projection.style.minWidth = width.toString() + "px";
+  projection.style.maxWidth = width.toString() + "px";
 
   return projection;
 };
@@ -54,20 +24,85 @@ export const swapElementToProjection: SwapElementToProjectionType = (coordinates
   }
 
   const { pointerX, pointerY } = coordinates;
-  const { x: projectionX, y: projectionY } = projection.getBoundingClientRect();
+  let { left: projectionX, top: projectionY } = projection.getBoundingClientRect();
 
-  const nodeBelowPointer = document.elementFromPoint(pointerX, pointerY);
+  projectionX = projectionX + window.pageXOffset;
+  projectionY = projectionY + window.pageYOffset;
 
-  if (!nodeBelowPointer || !elementsMapping.current.get(nodeBelowPointer)) {
+  let nodeBelowPointer = document.elementFromPoint(pointerX, pointerY);
+
+  if (!nodeBelowPointer) {
+    return;
+  }
+  /*Чтобы найти родительский контейнер**/
+  nodeBelowPointer = nodeBelowPointer.closest(".item");
+
+  if (!nodeBelowPointer || elementsMapping.current.get(nodeBelowPointer) === undefined) {
     return;
   }
 
-  const { x: nodeX, y: nodeY } = nodeBelowPointer.getBoundingClientRect();
+  let { left: nodeX, top: nodeY } = nodeBelowPointer.getBoundingClientRect();
 
-  if (projectionY > nodeY || projectionX > nodeX) {
+  nodeX = nodeX + window.pageXOffset;
+  nodeY = nodeY + window.pageYOffset;
+
+  const scrollPosition = {
+    x: window.pageXOffset || document.documentElement.scrollLeft || document.body.scrollLeft,
+    y: window.pageYOffset || document.documentElement.scrollTop || document.body.scrollTop
+  }
+
+  if (projectionX === nodeX && projectionY > nodeY ||
+    projectionY === nodeY && projectionX > nodeX) {
+
     dropZoneRef.current.insertBefore(projection, nodeBelowPointer);
   } else {
     dropZoneRef.current.insertBefore(projection, nodeBelowPointer.nextElementSibling);
   }
+
+
   return nodeBelowPointer;
 };
+
+export const swapElementToProjectionNew: SwapElementToProjectionTypeNew = (event,
+                                                                     projection,
+                                                                     dropZoneRef,
+                                                                     elementsMapping) => {
+  if (dropZoneRef.current === null) {
+    return;
+  }
+
+  const { clientX: pointerClientX, clientY: pointerClientY, pageX: pointerPageX, pageY: pointerPageY } = event
+
+  let nodeBelowPointer = document.elementFromPoint(pointerClientX, pointerClientY);
+
+  if (nodeBelowPointer !== null){
+    nodeBelowPointer = nodeBelowPointer.closest('[data-dnd]');
+
+
+    if (nodeBelowPointer !== null && elementsMapping.current.get(nodeBelowPointer) !== undefined) {
+      let { left: projectionX, top: projectionY } = projection.getBoundingClientRect();
+      let { left: nodeBelowPointerX, top: nodeBelowPointerY } = nodeBelowPointer.getBoundingClientRect();
+
+      projectionX = projectionX + window.scrollX;
+      projectionY = projectionY + window.scrollY;
+      nodeBelowPointerX = nodeBelowPointerX + window.scrollX;
+      nodeBelowPointerY = nodeBelowPointerY + window.scrollY;
+      const scrollPosition = {
+        x: window.pageXOffset || document.documentElement.scrollLeft || document.body.scrollLeft,
+        y: window.pageYOffset || document.documentElement.scrollTop || document.body.scrollTop
+      }
+
+      if (projectionX === nodeBelowPointerX && projectionY > nodeBelowPointerY ||
+        projectionY === projectionY && projectionX > nodeBelowPointerX) {
+
+        dropZoneRef.current.insertBefore(projection, nodeBelowPointer);
+      } else {
+        dropZoneRef.current.insertBefore(projection, nodeBelowPointer.nextElementSibling);
+      }
+
+      window.scrollTo(scrollPosition.x, scrollPosition.y);
+
+      return nodeBelowPointer
+    }
+  }
+}
